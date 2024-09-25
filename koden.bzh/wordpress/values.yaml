@@ -1,0 +1,76 @@
+## Values.yaml
+
+## WordPress-specific parameters
+
+wordpressUsername: admin     # Nom d'utilisateur WordPress
+wordpressEmail: ns.ar@laposte.net  # Email pour l'utilisateur
+wordpressFirstName: Admin     # Prénom pour l'utilisateur WordPress
+wordpressLastName: User       # Nom pour l'utilisateur WordPress
+wordpressBlogName: koden    # Nom de votre blog WordPress
+
+## Database configuration
+
+mariadb:
+  auth:
+    username: bn_wordpress            # Nom d'utilisateur de la base de données
+    database: bitnami_wordpress       # Nom de la base de données à créer
+  primary:
+    persistence:
+      enabled: true                   # Activer la persistance de la base de données
+      size: 5Gi                       # Taille du volume persistant
+
+## Service configuration
+
+service:
+  type: ClusterIP                     # Utilisez ClusterIP car vous utilisez Ingress pour l'exposition
+  port: 80                            # Port HTTP interne
+  httpsPort: 443                      # Port HTTPS interne
+
+## Persistence for WordPress
+
+persistence:
+  enabled: true                       # Activer la persistance des fichiers WordPress
+  size: 5Gi                          # Taille du volume persistant pour les fichiers WordPress
+
+## Ingress configuration for external access
+
+ingress:
+  enabled: true                       # Activer l'ingress pour exposer WordPress via Ingress
+  ingressClassName: nginx             # Utiliser la classe Ingress nginx
+  hostname: koden.bzh     # Remplacez par le nom d'hôte pour votre WordPress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"             # Redirection HTTP vers HTTPS
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"           # Utilisation de Let's Encrypt pour le certificat TLS
+  tls: true                           # Activer TLS (doit être un booléen)
+  hosts:
+    - host: koden.bzh
+      paths:
+        - /
+    - host: www.koden.bzh
+      paths:
+        - /
+  tlsSecrets:                         # Définir le secret pour TLS
+    secretName: wordpress-tls        # Nom du secret qui contiendra le certificat TLS
+    hosts:
+      - koden.bzh        # Remplacez par votre nom d'hôte
+      - www.koden.bzh
+
+## Customization of resources (optional)
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 300m
+    memory: 256Mi
+
+## Liveness and readiness probes configuration
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 120
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 30
